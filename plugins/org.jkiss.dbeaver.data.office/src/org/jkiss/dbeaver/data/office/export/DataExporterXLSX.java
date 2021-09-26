@@ -46,7 +46,6 @@ import java.io.Reader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 /**
  * Export XLSX with Apache POI
  */
@@ -60,6 +59,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
     private static final String PROP_HEADER_FONT = "headerfont";
+    private static final String PROP_HEADER_TYPEFACE = "headertypeface";
 
     private static final String BINARY_FIXED = "[BINARY]";
 
@@ -106,6 +106,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private HashMap<Object, Worksheet> worksheets;
 
+    
     public static Map<String, Object> getDefaultProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put(DataExporterXLSX.PROP_ROWNUMBER, false);
@@ -113,6 +114,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_HEADER, true);
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
+        properties.put(DataExporterXLSX.PROP_HEADER_TYPEFACE, "Arial");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
         properties.put(DataExporterXLSX.PROP_FALSESTRING, "false");
         properties.put(DataExporterXLSX.PROP_EXPORT_SQL, false);
@@ -122,13 +124,14 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         return properties;
     }
+    
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         Map<String, Object> properties = site.getProperties();
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-
+        
         try {
             printHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), true);
         } catch (Exception e) {
@@ -190,7 +193,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         worksheets = new HashMap<>(1);
 
         styleHeader = (XSSFCellStyle) wb.createCellStyle();
-
+        
         BorderStyle border;
 
         try {
@@ -202,9 +205,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             border = BorderStyle.NONE;
 
         }
-
+        
         FontStyleProp fontStyle;
-
+        
         try {
 
             fontStyle = FontStyleProp.valueOf(CommonUtils.toString(properties.get(PROP_HEADER_FONT), FontStyleProp.BOLD.name()));
@@ -214,14 +217,27 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             fontStyle = FontStyleProp.NONE;
 
         }
+        
+        String typeface;
+        
+        try {
+            typeface = (String) properties.get(PROP_HEADER_TYPEFACE);
+        } catch (Exception e) {
 
+        	typeface = "Arial";
+
+        }
+
+        
+        
+        
         styleHeader.setBorderTop(border);
         styleHeader.setBorderBottom(border);
         styleHeader.setBorderLeft(border);
         styleHeader.setBorderRight(border);
 
         XSSFFont fontBold = (XSSFFont) wb.createFont();
-
+        
         switch (fontStyle) {
 
         case BOLD:
@@ -243,6 +259,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         default:
             break;
         }
+
+        fontBold.setFontName(typeface);
 
         styleHeader.setFont(fontBold);
 
@@ -539,3 +557,4 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
 }
+
